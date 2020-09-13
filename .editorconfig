@@ -1,0 +1,13 @@
+root = true
+
+[*.gitignore]
+
+[*]
+indent_style = tab
+indent_size = 4
+charset = "UTF-8"
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+insert_final_newline = false
