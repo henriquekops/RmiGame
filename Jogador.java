@@ -16,12 +16,18 @@ private static int idJogador;
     }
 
     public static void inicia() throws RemoteException{
+        //Chamado pelo servidor em cada instancia do jogador
+        //para comecar o jogo propriamente dito
     }
 
     public static void finaliza() throws RemoteException{
+        //O encerramento de um certo jogador quando
+        //o jogador termina o jogo/o jogo termina o jogador
     }
 
     public static void cutuca() throws RemoteException{
+        //O servidor checa o jogador a cada 3s
+        //para ver se ele ainda esta ativo/vivo
     }
 
 }
