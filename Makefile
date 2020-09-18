@@ -1,17 +1,16 @@
-all:			Jogador.class Jogo.class \
-			JogadorInterface.class JogoInterface.class
+all: Jogador.class Jogo.class JogadorInterface.class JogoInterface.class
 
-JogadorInterface.class:	JogadorInterface.java
-			@javac JogadorInterface.java
+JogadorInterface.class:	src/JogadorInterface.java
+	@javac src/JogadorInterface.java
 
-JogoInterface.class:	JogoInterface.java
-			@javac JogoInterface.java
+JogoInterface.class: src/JogoInterface.java
+	@javac src/JogoInterface.java
 
-Jogador.class:	Jogador.java
-			@javac Jogador.java
+Jogador.class: src/Jogador.java
+	@javac src/Jogador.java
 
-Jogo.class:	Jogo.java
-			@javac Jogo.java
+Jogo.class: src/Jogo.java
+	@javac src/Jogo.java
 
 clean:
-			@rm -f *.class *~
+	@rm -f *.class *~
