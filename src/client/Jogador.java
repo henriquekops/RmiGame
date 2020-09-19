@@ -1,7 +1,8 @@
-package src;
+package src.client;
+
+import src.server.JogoInterface;
 
 import java.net.MalformedURLException;
-import java.net.ServerSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;

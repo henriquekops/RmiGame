@@ -1,8 +1,6 @@
-package src;
+package src.server;
 
-import java.net.MalformedURLException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
@@ -14,6 +12,10 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 	private static volatile int nextPlayer;
 	private static volatile int numPlayers;
 	private static volatile boolean isFull;
+
+	private static final String CUTUCA = "cutuca";
+	private static final String FINALIZA = "finaliza";
+	private static final String INICIA = "inicia";
 
 	public Jogo() throws RemoteException {}
 
@@ -109,57 +111,25 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		}
 
 		System.out.println("game started!");
-		heartBeat();
+		callCutuca();
 //		callInit();
 	}
 
 	private static void callInit() {
 		for (int i = 0; i < players.length; i++) {
-			String remoteConnection = "rmi://" + players[i] + ":3001/Jogador";
-			new Thread() {
-				@Override
-				public void run() {
-					try{
-						System.out.println("initiating callInit thread for: " + remoteConnection);
-						JogadorInterface jogador = (JogadorInterface) Naming.lookup(remoteConnection);
-						jogador.inicia();
-						this.interrupt();
-					} catch ( RemoteException | NotBoundException | MalformedURLException e) {
-						System.out.println("Exception at heartBeat: " + e);
-						e.printStackTrace();
-						this.interrupt();
-					}
-				}
-			}.start();
+			ServerThread t = new ServerThread(createRemoteUri(players[i]), INICIA);
+			t.start();
 		}
 	}
 
-	private static void heartBeat() {
+	private static void callCutuca() {
 		for (int i = 0; i < players.length; i++) {
-			String remoteConnection = "rmi://" + players[i] + ":3001/Jogador";
-			new Thread() {
-				@Override
-				public void run() {
-					try {
-						System.out.println("initiating heartbeat thread for: " + remoteConnection);
-						JogadorInterface jogador = (JogadorInterface) Naming.lookup(remoteConnection);
-						System.out.println("blah");
-						while (true) {
-							if (jogador != null) {
-								jogador.cutuca();
-								System.out.println(remoteConnection + " is alive!");
-							} else {
-								this.interrupt();
-							}
-							Thread.sleep(3000);
-						}
-					}
-					catch( RemoteException | InterruptedException | NotBoundException | MalformedURLException e) {
-						System.out.println("Connection to '" + remoteConnection + "' was lost!");
-						this.interrupt();
-					}
-				}
-			}.start();
+			ServerThread t = new ServerThread(createRemoteUri(players[i]), CUTUCA);
+			t.run();
 		}
+	}
+
+	private static String createRemoteUri(String remoteHostName) {
+		return "rmi://" + remoteHostName + ":3001/Jogador";
 	}
 }
