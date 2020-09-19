@@ -1,11 +1,17 @@
-![](https://img.shields.io/badge/Status-Voando-brightgreen) 
+# RmiGame
 
+![](https://img.shields.io/badge/status-stable-orange) 
 
+## How to run
 
+Server
+```sh
+$ make
+$ java src.Jogo <server> <num players>
+```
 
-
-# Trabalho 1 de Programação Distribuída
-## T1 ProgDis: Gabriel Castro, Gustavo Possebon, Henrique Kops
-
-![alt text](https://vestibulares2020.com/wp-content/uploads/2019/03/vestibular-pucrs-2020.png)
-
+Client
+```sh
+$ make
+$ java src.Jogador <server> <client>
+```
