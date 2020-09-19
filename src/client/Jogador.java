@@ -15,10 +15,12 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 	private static int playerId;
 	private static int numPlays;
 	private static volatile boolean canPlay;
+	private static volatile boolean shutdown;
 
 	public Jogador() throws RemoteException {
 		playerId = -1;
 		canPlay = false;
+		shutdown = false;
 	}
 
 	public void inicia() throws RemoteException {
@@ -26,7 +28,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 	}
 
 	public void finaliza() throws RemoteException {
-		// finalizacao do registro do jogador
+		shutdown = true;
 	}
 
 	public void cutuca() throws RemoteException {
@@ -80,7 +82,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			System.out.println("Connecting to server at : " + serverHostName + " ...");
 			game = (JogoInterface) Naming.lookup(serverHostName);
 		} catch (RemoteException | MalformedURLException | NotBoundException e) {
-			System.out.println ("Client failed: " + e);
+			System.out.println("Client failed: " + e);
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -113,12 +115,13 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		try {
 			Random rand = new Random();
 			if (game != null) {
-				for(int i = 0; i < numPlays; i++) {
-					System.out.println("Making play n." + (i+1) + " ...");
-					if(game.joga(playerId) == 0) {
-						break;
+				for (int i = 0; i < numPlays; i++) {
+					System.out.println("Making play n." + (i + 1) + " ...");
+					if (game.joga(playerId) == 0) {
+						System.out.println("Disconnected from server, good bye!");
+						System.exit(1);
 					}
-					Thread.sleep(rand.nextInt(1500-500)+500);
+					Thread.sleep(rand.nextInt(1500 - 500) + 500);
 				}
 			} else {
 				System.out.println("Server is not active!");
@@ -128,7 +131,34 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			System.out.println("Exception when registering: " + e);
 			e.printStackTrace();
 		}
+		System.out.println("Finished my plays!");
 
-		while(true) {}
+		try {
+			if (game != null) {
+				if (game.encerra(playerId) == 1) {
+					System.out.println("Asking server to close my connection ...");
+				} // condicional desnecessaria, esta aqui para ilustrar o retorno da chamada remota
+			} else {
+				System.out.println("Server is not active!");
+				System.exit(1);
+			}
+		} catch (RemoteException e) {
+			System.out.println("Exception occurred when closing connection: " + e);
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		try {
+			while (!shutdown) {
+				Thread.sleep(5000);
+				System.out.println("Waiting server ...");
+			}
+		} catch (InterruptedException e) {
+			System.out.println("Exception at server busy wait: " + e);
+			e.printStackTrace();
+		}
+
+		System.out.println("Client shutdown, bye!");
+		System.exit(1);
 	}
 }
