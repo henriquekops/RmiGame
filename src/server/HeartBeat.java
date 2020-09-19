@@ -27,7 +27,7 @@ public class HeartBeat extends Thread {
 			while (true) {
 				if (player != null) {
 					player.cutuca();
-					System.out.println(this.remoteHostName + " is alive!");
+					System.out.println("Heart beat from '" + this.remoteHostName + "', it is alive!");
 				} else {
 					this.interrupt();
 				}
