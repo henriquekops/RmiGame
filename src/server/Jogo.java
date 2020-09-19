@@ -113,6 +113,7 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		System.out.println("game started!");
 		callCutuca();
 //		callInit();
+//		callFinaliza();
 	}
 
 	private static void callInit() {
@@ -125,6 +126,13 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 	private static void callCutuca() {
 		for (int i = 0; i < players.length; i++) {
 			ServerThread t = new ServerThread(createRemoteUri(players[i]), CUTUCA);
+			t.run();
+		}
+	}
+
+	private static void callFinaliza() {
+		for (int i = 0; i < players.length; i++) {
+			ServerThread t = new ServerThread(createRemoteUri(players[i]), FINALIZA);
 			t.run();
 		}
 	}
