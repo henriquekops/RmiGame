@@ -1,5 +1,7 @@
 package src.server;
 
+import src.client.JogadorInterface;
+
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
@@ -13,32 +15,32 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 	private static volatile int numPlayers;
 	private static volatile boolean isFull;
 
-	private static final String CUTUCA = "cutuca";
-	private static final String FINALIZA = "finaliza";
-	private static final String INICIA = "inicia";
-
-	public Jogo() throws RemoteException {}
+	public Jogo() throws RemoteException {
+		isFull = false;
+		nextPlayer = 0;
+		players = new String[numPlayers];
+	}
 
 	public int registra() {
-		int clientId = -1;
+		int playerId = -1;
 
 		try {
 			String host = getClientHost();
-			System.out.println(host + " is registering...");
+			System.out.println(host + " is registering ...");
 			if (nextPlayer < numPlayers) {
 				players[nextPlayer] = host;
 				nextPlayer += 1;
-				clientId = nextPlayer;
+				playerId = nextPlayer;
 			}
 			if (nextPlayer >= numPlayers) {
-				System.out.println("game is full!");
+				System.out.println("Game is full, no more player can join!");
 				isFull = true;
 			}
 		} catch (ServerNotActiveException e) {
 			System.out.println("Could not establish connection to client!");
 		}
 
-		return clientId;
+		return playerId;
 	}
 
 	public int joga(int id) {
@@ -51,7 +53,7 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		return -1;
 	}
 
-	private static void validateArgs(String [] args) {
+	private static void init(String [] args) {
 		if (args.length != 2) {
 			System.out.println("Usage: java AdditionServer <server> <num players>");
 			System.exit(1);
@@ -68,11 +70,9 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 			System.out.println("Cannot start game with no players");
 			System.exit(1);
 		}
-	}
 
-	private static void registerServer(String host) {
 		try {
-			System.setProperty("java.rmi.server.hostname", host);
+			System.setProperty("java.rmi.server.hostname", args[0]);
 			LocateRegistry.createRegistry(3000);
 			System.out.println("java RMI registry created.");
 		} catch (RemoteException e) {
@@ -81,9 +81,8 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		}
 
 		try {
-			String remoteHost = "rmi://" + host + ":3000/Jogo";
+			String remoteHost = "rmi://" + args[0] + ":3000/Jogo";
 			Naming.rebind(remoteHost, new Jogo());
-			System.out.println("RmiGame server is ready.\n^C to quit...");
 		} catch (Exception e) {
 			System.out.println("Main thread failed: " + e);
 			e.printStackTrace();
@@ -91,16 +90,11 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		}
 	}
 
-	public static void main(String [] args) throws RemoteException {
+	public static void main(String [] args) {
+		init(args);
+		System.out.println("RmiGame server started, ^C to quit...");
 
-		validateArgs(args);
-		registerServer(args[0]);
-
-		isFull = false;
-		nextPlayer = 0;
-		players = new String[numPlayers];
-
-		System.out.println("waiting for players...");
+		System.out.println("Waiting for players...");
 		while (!isFull) {
 			try {
 				Thread.sleep(1000);
@@ -110,34 +104,11 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 			}
 		}
 
-		System.out.println("game started!");
-		callCutuca();
-//		callInit();
-//		callFinaliza();
-	}
-
-	private static void callInit() {
+		System.out.println("Lobby is full, starting game...");
 		for (int i = 0; i < players.length; i++) {
-			ServerThread t = new ServerThread(createRemoteUri(players[i]), INICIA);
-			t.start();
-		}
-	}
-
-	private static void callCutuca() {
-		for (int i = 0; i < players.length; i++) {
-			ServerThread t = new ServerThread(createRemoteUri(players[i]), CUTUCA);
+			String remoteHostName = "rmi://" + players[i] + ":3001/Jogador";
+			HeartBeat t = new HeartBeat(remoteHostName);
 			t.run();
 		}
-	}
-
-	private static void callFinaliza() {
-		for (int i = 0; i < players.length; i++) {
-			ServerThread t = new ServerThread(createRemoteUri(players[i]), FINALIZA);
-			t.run();
-		}
-	}
-
-	private static String createRemoteUri(String remoteHostName) {
-		return "rmi://" + remoteHostName + ":3001/Jogador";
 	}
 }
