@@ -1,8 +1,6 @@
-# RmiGame
+# RmiGame ![](https://img.shields.io/badge/status-stable-orange) 
 
-![](https://img.shields.io/badge/status-stable-orange) 
-
-## How to run
+### How to run
 
 Server
 ```sh
