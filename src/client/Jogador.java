@@ -1,7 +1,8 @@
-package src;
+package src.client;
+
+import src.server.JogoInterface;
 
 import java.net.MalformedURLException;
-import java.net.ServerSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -12,26 +13,21 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 
 	private static int idJogador;
 
-	public Jogador() throws RemoteException {
-		this.idJogador = 0;
-	}
+	public Jogador() throws RemoteException {}
 
 	public void inicia() throws RemoteException {
-		//Chamado pelo servidor em cada instancia do jogador
-		//para comecar o jogo propriamente dito
+		// permite que o cliente comece a realizar jogadas no servidor
 	}
 
 	public void finaliza() throws RemoteException {
-		//O encerramento de um certo jogador quando
-		//o jogador termina o jogo/o jogo termina o jogador
+		// finalizacao do registro do jogador
 	}
 
 	public void cutuca() throws RemoteException {
-		//O servidor checa o jogador a cada 3s
-		//para ver se ele ainda esta ativo/vivo
+		System.out.println("Telling server Im alive...");
 	}
 
-	public static void main(String [] args) {
+	private static void init(String [] args) {
 		if (args.length != 2) {
 			System.out.println("Usage: java Jogador <client> <server>");
 			System.exit(1);
@@ -48,31 +44,32 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		try {
 			String client = "rmi://" + args[0] + ":3001/Jogador";
 			Naming.rebind(client, new Jogador());
-			System.out.println("RmiGame client is ready.");
 		} catch (Exception e) {
 			System.out.println("RmiGame client failed: " + e);
 			e.printStackTrace();
 		}
+	}
 
-		System.out.println("Client started!");
+	public static void main(String [] args) {
+		init(args);
+		System.out.println("RmiGame client started, ^C to quit ...");
 
-		int id;
 		String remoteHostName = args[1];
 		String connectLocation = "rmi://" + remoteHostName + ":3000/Jogo";
 
 		try {
-			System.out.println("connecting to client at : " + connectLocation);
+			System.out.println("Connecting to server at : " + connectLocation + " ...");
 			JogoInterface game = (JogoInterface) Naming.lookup(connectLocation);
-			System.out.println("calling register at: " + connectLocation + "...");
+			System.out.println("Registering at: " + connectLocation + " ...");
 			if (game != null) {
-				id = game.registra();
-				System.out.println("my id is: " + id);
+				idJogador = game.registra();
+				System.out.println("Player id is: " + idJogador + "!");
 			}
 		} catch (RemoteException | MalformedURLException | NotBoundException e) {
 			System.out.println ("Client failed: " + e);
+			e.printStackTrace();
 		}
 
-		System.out.println("^C to quit...");
 		while (true) {}
 	}
 

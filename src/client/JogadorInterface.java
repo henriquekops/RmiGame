@@ -1,4 +1,4 @@
-package src;
+package src.client;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
