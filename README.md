@@ -11,5 +11,5 @@ $ java src.Jogo <server> <num players>
 Client
 ```sh
 $ make
-$ java src.Jogador <server> <client>
+$ java src.Jogador <client> <server>
 ```
