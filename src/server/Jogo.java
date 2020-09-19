@@ -2,21 +2,28 @@ package src.server;
 
 import src.client.JogadorInterface;
 
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.LocateRegistry;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Random;
 
 public class Jogo extends UnicastRemoteObject implements JogoInterface {
 
-	private static volatile String[] players;
+	public static volatile String[] players;
 	private static volatile int nextPlayer;
 	private static volatile int numPlayers;
 	private static volatile boolean isFull;
+	private static volatile boolean started;
 
 	public Jogo() throws RemoteException {
 		isFull = false;
+		started = false;
 		nextPlayer = 0;
 		players = new String[numPlayers];
 	}
@@ -25,16 +32,19 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		int playerId = -1;
 
 		try {
-			String host = getClientHost();
-			System.out.println(host + " is registering ...");
-			if (nextPlayer < numPlayers) {
-				players[nextPlayer] = host;
+			String clientHostName = getClientHost();
+			System.out.println(clientHostName + " is registering ...");
+			if (!started && nextPlayer < numPlayers) {
+				players[nextPlayer] = clientHostName;
 				nextPlayer += 1;
 				playerId = nextPlayer;
 			}
 			if (nextPlayer >= numPlayers) {
 				System.out.println("Game is full, no more player can join!");
 				isFull = true;
+			}
+			if (started) {
+				System.out.println("Game already started, no more player can join!");
 			}
 		} catch (ServerNotActiveException e) {
 			System.out.println("Could not establish connection to client!");
@@ -44,12 +54,23 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 	}
 
 	public int joga(int id) {
-		// delay de 500-1500ms (aleatorio) + 1% chance de chamar 'finaliza()'
-		return -1;
+		try {
+			String host = getClientHost();
+			System.out.println(host + " is playing ...");
+			boolean disconnect = new Random().nextInt(100) == 0;
+			if (disconnect) {
+				System.out.println("Client '" + players[id-1] + "' took 1% chance disconnection!");
+				players[id-1] = null;
+				return 0;
+			}
+		} catch (ServerNotActiveException e) {
+			System.out.println("Could not establish connection to client!");
+		}
+		return 1;
 	}
 
 	public int encerra(int id) {
-		// desativar no array 'jogadorStatus' o bit (1 -> 0) na posicao 'id'
+		// remover conexao no array de hosts
 		return -1;
 	}
 
@@ -94,6 +115,7 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		init(args);
 		System.out.println("RmiGame server started, ^C to quit...");
 
+		// wait players
 		System.out.println("Waiting for players...");
 		while (!isFull) {
 			try {
@@ -103,12 +125,48 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 				e.printStackTrace();
 			}
 		}
+		started = true;
 
-		System.out.println("Lobby is full, starting game...");
+		// init heartbeats
+		System.out.println("Starting heartbeats...");
 		for (int i = 0; i < players.length; i++) {
-			String remoteHostName = "rmi://" + players[i] + ":3001/Jogador";
-			HeartBeat t = new HeartBeat(remoteHostName);
-			t.run();
+			String clientHostName = "rmi://" + players[i] + ":3001/Jogador";
+			HeartBeat t = new HeartBeat(clientHostName, i);
+			t.start();
 		}
+
+		// start game
+		System.out.println("Starting game...");
+		String clientHostName;
+		JogadorInterface player;
+		for (int i = 0; i < players.length; i++) {
+			try {
+				clientHostName = "rmi://" + players[i] + ":3001/Jogador";
+				player = (JogadorInterface) Naming.lookup(clientHostName);
+				if (player != null) {
+					System.out.println("Client '" + players[i] + "' can play!");
+					player.inicia();
+				}
+				else {
+					System.out.println("Client '" + players[i] + "' lost connection!");
+					players[i] = null;
+				}
+			} catch( RemoteException | NotBoundException | MalformedURLException e) {
+				System.out.println("Exception when initializing game: " + e);
+				e.printStackTrace();
+			}
+		}
+
+		// wait for all connections to finish
+		while(!Arrays.stream(players).allMatch(Objects::isNull)) {
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				System.out.println("Exception at server busy wait: " + e);
+				e.printStackTrace();
+			}
+		}
+		System.out.println("No more players, server shutdown ...");
+		System.exit(0);
 	}
 }
