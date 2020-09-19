@@ -14,7 +14,7 @@ $ make
 $ java src.client.Jogador <client> <server>
 ```
 
-### Clean compiled class
+### Clean compiled classes
 
 ```sh
 $ make clean
