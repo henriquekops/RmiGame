@@ -14,7 +14,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 
 	private static int playerId;
 	private static int numPlays;
-	private static boolean canPlay;
+	private static volatile boolean canPlay;
 
 	public Jogador() throws RemoteException {
 		playerId = -1;
@@ -65,6 +65,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		} catch (Exception e) {
 			System.out.println("RmiGame client failed: " + e);
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -81,6 +82,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		} catch (RemoteException | MalformedURLException | NotBoundException e) {
 			System.out.println ("Client failed: " + e);
 			e.printStackTrace();
+			System.exit(1);
 		}
 
 		try {
@@ -88,35 +90,45 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			if (game != null) {
 				playerId = game.registra();
 				System.out.println("Player id is: " + playerId + "!");
+			} else {
+				System.out.println("Server is not active!");
+				System.exit(1);
 			}
 		} catch (RemoteException e) {
 			System.out.println("Exception when registering: " + e);
 			e.printStackTrace();
 		}
-		while(true) {}
 
-//		while (!canPlay) {
-//			try {
-//				Thread.sleep(1000);
-//			} catch (InterruptedException e) {
-//				System.out.println("Error at main thread: " + e);
-//				e.printStackTrace();
-//			}
-//		}
-//
-//		try {
-//			System.out.println("Registering at: " + serverHostName + " ...");
-//			Random rand = new Random();
-//			if (game != null) {
-//				for(int i = 0; i < numPlays; i++) {
-//					System.out.println("Making play n." + i + " ...");
-//					game.joga(playerId);
-//					Thread.sleep(rand.nextInt(1500-500)+500);
-//				}
-//			}
-//		} catch (RemoteException | InterruptedException e) {
-//			System.out.println("Exception when registering: " + e);
-//			e.printStackTrace();
-//		}
+		while (!canPlay) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				System.out.println("Error at main thread: " + e);
+				e.printStackTrace();
+			}
+		}
+
+		System.out.println("I can  play!");
+
+		try {
+			Random rand = new Random();
+			if (game != null) {
+				for(int i = 0; i < numPlays; i++) {
+					System.out.println("Making play n." + (i+1) + " ...");
+					if(game.joga(playerId) == 0) {
+						break;
+					}
+					Thread.sleep(rand.nextInt(1500-500)+500);
+				}
+			} else {
+				System.out.println("Server is not active!");
+				System.exit(1);
+			}
+		} catch (RemoteException | InterruptedException e) {
+			System.out.println("Exception when registering: " + e);
+			e.printStackTrace();
+		}
+
+		while(true) {}
 	}
 }
