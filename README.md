@@ -11,7 +11,7 @@ $ java src.server.Jogo <server> <num players>
 Client
 ```sh
 $ make
-$ java src.client.Jogador <client> <server>
+$ java src.client.Jogador <client> <server> <num plays>
 ```
 
 ### Clean compiled classes

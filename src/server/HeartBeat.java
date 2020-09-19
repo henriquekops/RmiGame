@@ -19,11 +19,11 @@ public class HeartBeat extends Thread {
 	@Override
 	public void run() {
 		try {
-			JogadorInterface jogador = (JogadorInterface) Naming.lookup(this.remoteHostName);
+			JogadorInterface player = (JogadorInterface) Naming.lookup(this.remoteHostName);
 
 			while (true) {
-				if (jogador != null) {
-					jogador.cutuca();
+				if (player != null) {
+					player.cutuca();
 					System.out.println(this.remoteHostName + " is alive!");
 				} else {
 					this.interrupt();

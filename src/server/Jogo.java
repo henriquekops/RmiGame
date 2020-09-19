@@ -2,11 +2,14 @@ package src.server;
 
 import src.client.JogadorInterface;
 
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.LocateRegistry;
+import java.util.Random;
 
 public class Jogo extends UnicastRemoteObject implements JogoInterface {
 
@@ -25,10 +28,10 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 		int playerId = -1;
 
 		try {
-			String host = getClientHost();
-			System.out.println(host + " is registering ...");
+			String clientHostName = getClientHost();
+			System.out.println(clientHostName + " is registering ...");
 			if (nextPlayer < numPlayers) {
-				players[nextPlayer] = host;
+				players[nextPlayer] = clientHostName;
 				nextPlayer += 1;
 				playerId = nextPlayer;
 			}
@@ -44,12 +47,21 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 	}
 
 	public int joga(int id) {
-		// delay de 500-1500ms (aleatorio) + 1% chance de chamar 'finaliza()'
+		try {
+			String host = getClientHost();
+			System.out.println(host + " is playing ...");
+			boolean disconnect = new Random().nextInt(100) == 0;
+			if (disconnect) {
+				System.out.println("dc");
+			}
+		} catch (ServerNotActiveException e) {
+			System.out.println("Could not establish connection to client!");
+		}
 		return -1;
 	}
 
 	public int encerra(int id) {
-		// desativar no array 'jogadorStatus' o bit (1 -> 0) na posicao 'id'
+		// remover conexao no array de hosts
 		return -1;
 	}
 
@@ -104,11 +116,22 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 			}
 		}
 
-		System.out.println("Lobby is full, starting game...");
+		System.out.println("Starting game...");
 		for (int i = 0; i < players.length; i++) {
-			String remoteHostName = "rmi://" + players[i] + ":3001/Jogador";
-			HeartBeat t = new HeartBeat(remoteHostName);
+			String clientHostName = "rmi://" + players[i] + ":3001/Jogador";
+			HeartBeat t = new HeartBeat(clientHostName);
 			t.run();
 		}
+
+//		for (int i = 0; i < players.length; i++) {
+//			try {
+//				String clientHostName = "rmi://" + players[i] + ":3001/Jogador";
+//				JogadorInterface player = (JogadorInterface) Naming.lookup(clientHostName);
+//				player.inicia();
+//			} catch( RemoteException | NotBoundException | MalformedURLException e) {
+//				System.out.println("Exception when initializing game: " + e);
+//				e.printStackTrace();
+//			}
+//		}
 	}
 }
