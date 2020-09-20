@@ -54,24 +54,29 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 	}
 
 	public int joga(int id) {
-		try {
-			String host = getClientHost();
-			System.out.println(host + " is playing ...");
-			boolean disconnect = new Random().nextInt(100) == 0;
-			if (disconnect) {
-				System.out.println("Client '" + players[id-1] + "' took 1% chance disconnection!");
-				players[id-1] = null;
-				return 0;
-			}
-		} catch (ServerNotActiveException e) {
-			System.out.println("Could not establish connection to client!");
+		String host = players[id-1];
+		System.out.println(host + " is playing ...");
+		boolean disconnect = new Random().nextInt(100) != 0;
+		if (disconnect) {
+			System.out.println("Client '" + players[id-1] + "' took 1% chance disconnection!");
+			players[id-1] = null;
+			return 0;
 		}
 		return 1;
 	}
 
 	public int encerra(int id) {
-		// remover conexao no array de hosts
-		return -1;
+		try {
+			String clientHostName = "rmi://" + players[id-1] + ":3001/Jogador";
+			System.out.println("Closing connection with '" + clientHostName + "' ...");
+			JogadorInterface player =  (JogadorInterface) Naming.lookup(clientHostName);
+			player.finaliza();
+			players[id-1] = null;
+		} catch (NotBoundException | RemoteException | MalformedURLException e) {
+			System.out.println("Exception occurred when finishing a client connection: " + e);
+			e.printStackTrace();
+		}
+		return 1; // o que retornar aqui?
 	}
 
 	private static void init(String [] args) {
