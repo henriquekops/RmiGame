@@ -43,7 +43,7 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 				System.out.println("Game is full, no more player can join!");
 				isFull = true;
 			}
-			if (started) {
+			else if (started) {
 				System.out.println("Game already started, no more player can join!");
 			}
 		} catch (ServerNotActiveException e) {
@@ -55,7 +55,7 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 
 	public int joga(int id) {
 		String host = players[id-1];
-		System.out.println("Client ''" + host + "' is playing ...");
+		System.out.println("Client '" + host + "' is playing ...");
 		boolean disconnect = new Random().nextInt(100) == 0;
 		if (disconnect) {
 			System.out.println("Client '" + players[id-1] + "' took 1% chance disconnection!");
