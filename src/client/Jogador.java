@@ -93,7 +93,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			if (game != null) {
 				playerId = game.registra();
 				if (playerId < 0) {
-					System.out.println("Game is full, bye!");
+					System.out.println("Game is full or already started, bye!");
 					System.exit(1);
 				} else {
 					System.out.println("Player id is: " + playerId + "!");

@@ -16,7 +16,7 @@ import java.util.Random;
 public class Jogo extends UnicastRemoteObject implements JogoInterface {
 
 	public static volatile String[] players;
-	private static volatile int nextPlayer;
+	public static volatile int nextPlayer;
 	private static volatile int numPlayers;
 	private static volatile boolean isFull;
 	private static volatile boolean started;
@@ -142,8 +142,8 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 
 		// start game
 		System.out.println("Starting game...");
-		String clientHostName;
-		JogadorInterface player;
+		String clientHostName = null;
+		JogadorInterface player = null;
 		for (int i = 0; i < players.length; i++) {
 			try {
 				clientHostName = "rmi://" + players[i] + ":3001/Jogador";
@@ -152,13 +152,9 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 					System.out.println("Client '" + players[i] + "' can play!");
 					player.inicia();
 				}
-				else {
-					System.out.println("Client '" + players[i] + "' lost connection!");
-					players[i] = null;
-				}
-			} catch( RemoteException | NotBoundException | MalformedURLException e) {
-				System.out.println("Exception when initializing game: " + e);
-				e.printStackTrace();
+			}
+			catch( RemoteException | NotBoundException | MalformedURLException e) {
+				System.out.println("While starting '" + clientHostName + "' disconnected ...");
 			}
 		}
 
