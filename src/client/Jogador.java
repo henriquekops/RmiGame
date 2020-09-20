@@ -78,20 +78,26 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		JogoInterface game = null;
 		String serverHostName = "rmi://" + args[1] + ":3000/Jogo";
 
+		// connect to server
 		try {
 			System.out.println("Connecting to server at : " + serverHostName + " ...");
 			game = (JogoInterface) Naming.lookup(serverHostName);
 		} catch (RemoteException | MalformedURLException | NotBoundException e) {
-			System.out.println("Client failed: " + e);
-			e.printStackTrace();
+			System.out.println("Could not connect to server!");
 			System.exit(1);
 		}
 
+		// register
 		try {
 			System.out.println("Registering at: " + serverHostName + " ...");
 			if (game != null) {
 				playerId = game.registra();
-				System.out.println("Player id is: " + playerId + "!");
+				if (playerId < 0) {
+					System.out.println("Game is full, bye!");
+					System.exit(1);
+				} else {
+					System.out.println("Player id is: " + playerId + "!");
+				}
 			} else {
 				System.out.println("Server is not active!");
 				System.exit(1);
@@ -101,6 +107,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			e.printStackTrace();
 		}
 
+		// wait for game to start
 		while (!canPlay) {
 			try {
 				Thread.sleep(1000);
@@ -109,9 +116,9 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 				e.printStackTrace();
 			}
 		}
-
 		System.out.println("I can  play!");
 
+		// play
 		try {
 			Random rand = new Random();
 			if (game != null) {
@@ -133,6 +140,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		}
 		System.out.println("Finished my plays!");
 
+		// end connection
 		try {
 			if (game != null) {
 				if (game.encerra(playerId) == 1) {
@@ -148,6 +156,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			System.exit(1);
 		}
 
+		// wait for shutdown
 		try {
 			while (!shutdown) {
 				Thread.sleep(5000);
@@ -157,7 +166,6 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			System.out.println("Exception at server busy wait: " + e);
 			e.printStackTrace();
 		}
-
 		System.out.println("Client shutdown, bye!");
 		System.exit(1);
 	}

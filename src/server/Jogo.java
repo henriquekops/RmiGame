@@ -55,7 +55,7 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 
 	public int joga(int id) {
 		String host = players[id-1];
-		System.out.println(host + " is playing ...");
+		System.out.println("Client ''" + host + "' is playing ...");
 		boolean disconnect = new Random().nextInt(100) == 0;
 		if (disconnect) {
 			System.out.println("Client '" + players[id-1] + "' took 1% chance disconnection!");
