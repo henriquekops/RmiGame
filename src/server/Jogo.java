@@ -33,7 +33,7 @@ public class Jogo extends UnicastRemoteObject implements JogoInterface {
 
 		try {
 			String clientHostName = getClientHost();
-			System.out.println(clientHostName + " is registering ...");
+			System.out.println("Client '" + clientHostName + "' is registering ...");
 			if (!started && nextPlayer < numPlayers) {
 				players[nextPlayer] = clientHostName;
 				nextPlayer += 1;
