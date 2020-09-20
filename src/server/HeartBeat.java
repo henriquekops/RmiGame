@@ -37,6 +37,7 @@ public class HeartBeat extends Thread {
 		catch( RemoteException | InterruptedException | NotBoundException | MalformedURLException e) {
 			System.out.println("Connection to '" + this.remoteHostName + "' was lost!");
 			Jogo.players[playerId] = null;
+			Jogo.nextPlayer -= 1;
 			this.interrupt();
 		}
 	}
