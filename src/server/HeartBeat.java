@@ -21,13 +21,16 @@ public class HeartBeat extends Thread {
 
 	@Override
 	public void run() {
+		/*
+		 * Run heartbeat thread for client health check
+		 */
 		try {
 			JogadorInterface player = (JogadorInterface) Naming.lookup(this.remoteHostName);
 
 			while (true) {
 				if (player != null) {
 					player.cutuca();
-					System.out.println("Heart beat from '" + this.remoteHostName + "', it is alive!");
+					System.out.println("heart beat from client '" + this.remoteHostName + "', it is alive!");
 				} else {
 					this.interrupt();
 				}
@@ -35,9 +38,8 @@ public class HeartBeat extends Thread {
 			}
 		}
 		catch( RemoteException | InterruptedException | NotBoundException | MalformedURLException e) {
-			System.out.println("Connection to '" + this.remoteHostName + "' was lost!");
+			System.out.println("lost connection to client '" + this.remoteHostName + "'!");
 			Jogo.players[playerId] = null;
-			Jogo.nextPlayer -= 1;
 			this.interrupt();
 		}
 	}
