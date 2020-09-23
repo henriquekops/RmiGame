@@ -1,6 +1,5 @@
 package src.server;
 
-import src.client.Jogador;
 import src.client.JogadorInterface;
 
 import java.net.MalformedURLException;
