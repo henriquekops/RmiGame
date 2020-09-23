@@ -41,7 +41,7 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		/*
 		 * Tell server that this client is alive
 		 */
-		System.out.println("telling server Im alive...");
+		System.out.println("> telling server Im alive...");
 	}
 
 	private static void init(String [] args) {
@@ -67,9 +67,9 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		try {
 			System.setProperty("java.rmi.server.hostname", args[0]);
 			LocateRegistry.createRegistry(3001);
-			System.out.println("java RMI registry created.");
+			System.out.println("Java RMI registry created.");
 		} catch (RemoteException e) {
-			System.out.println("java RMI registry already exists.");
+			System.out.println("Java RMI registry already exists.");
 		}
 
 		try {
@@ -94,30 +94,30 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 
 		// connect to server
 		try {
-			System.out.println("connecting to server at : " + serverHostName + " ...");
+			System.out.println("> connecting to server at : " + serverHostName + " ...");
 			game = (JogoInterface) Naming.lookup(serverHostName);
 		} catch (RemoteException | MalformedURLException | NotBoundException e) {
-			System.out.println("could not connect to server!");
+			System.out.println("> could not connect to server!");
 			System.exit(1);
 		}
 
 		// register
 		try {
-			System.out.println("registering at: " + serverHostName + " ...");
+			System.out.println("> registering at: " + serverHostName + " ...");
 			if (game != null) {
 				playerId = game.registra();
 				if (playerId < 0) {
-					System.out.println("game is full or already started, good bye!");
+					System.out.println("> game is full or already started, good bye!");
 					System.exit(1);
 				} else {
-					System.out.println("registered with player id: " + playerId + "!");
+					System.out.println("> registered with player id: " + playerId + "!");
 				}
 			} else {
-				System.out.println("lost connection to server!");
+				System.out.println("> lost connection to server!");
 				System.exit(1);
 			}
 		} catch (RemoteException e) {
-			System.out.println("exception when registering: " + e);
+			System.out.println("> exception when registering: " + e);
 			e.printStackTrace();
 		}
 
@@ -126,45 +126,45 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				System.out.println("exception while waiting game to start: " + e);
+				System.out.println("> exception while waiting game to start: " + e);
 				e.printStackTrace();
 			}
 		}
 
 		// play
-		System.out.println("starting to play ...");
+		System.out.println("> starting to play ...");
 		try {
 			Random rand = new Random();
 			if (game != null) {
 				for (int i = 0; i < numPlays; i++) {
-					System.out.println("making play n." + (i + 1) + " ...");
+					System.out.println("> making play n." + (i + 1) + " ...");
 					if (game.joga(playerId) == 0) {
-						System.out.println("disconnected from server, good bye!");
+						System.out.println("> disconnected from server, good bye!");
 						System.exit(1);
 					}
 					Thread.sleep(rand.nextInt(1500 - 500) + 500);
 				}
 			} else {
-				System.out.println("lost connection to server, good bye!");
+				System.out.println("> lost connection to server, good bye!");
 				System.exit(1);
 			}
 		} catch (RemoteException | InterruptedException e) {
-			System.out.println("exception when registering: " + e);
+			System.out.println("> exception when registering: " + e);
 			e.printStackTrace();
 		}
-		System.out.println("finished playing!");
+		System.out.println("> finished playing!");
 
 		// end connection
 		try {
 			if (game != null) {
 				game.encerra(playerId);
-				System.out.println("asking server to close my connection ...");
+				System.out.println("> asking server to close my connection ...");
 			} else {
-				System.out.println("lost connection to server, good bye!");
+				System.out.println("> lost connection to server, good bye!");
 				System.exit(1);
 			}
 		} catch (RemoteException e) {
-			System.out.println("exception occurred when closing connection: " + e);
+			System.out.println("> exception occurred when closing connection: " + e);
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -173,15 +173,15 @@ public class Jogador extends UnicastRemoteObject implements JogadorInterface {
 		try {
 			while (!shutdown) {
 				Thread.sleep(5000);
-				System.out.println("waiting server to disconnect me ...");
+				System.out.println("> waiting server to disconnect me ...");
 			}
 		} catch (InterruptedException e) {
-			System.out.println("exception while waiting to quit: " + e);
+			System.out.println("> exception while waiting to quit: " + e);
 			e.printStackTrace();
 		}
 
 		// shutdown
-		System.out.println("client shutdown, bye!");
+		System.out.println("> client shutdown, bye!");
 		System.exit(1);
 	}
 }

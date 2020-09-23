@@ -29,7 +29,7 @@ public class HeartBeat extends Thread {
 			while (true) {
 				if (player != null) {
 					player.cutuca();
-					System.out.println("heart beat from client '" + this.remoteHostName + "', it is alive!");
+					System.out.println("> heart beat from client '" + this.remoteHostName + "', it is alive!");
 				} else {
 					this.interrupt();
 				}
@@ -37,7 +37,7 @@ public class HeartBeat extends Thread {
 			}
 		}
 		catch( RemoteException | InterruptedException | NotBoundException | MalformedURLException e) {
-			System.out.println("lost connection to client '" + this.remoteHostName + "'!");
+			System.out.println("> lost connection to client '" + this.remoteHostName + "'!");
 			Jogo.players[playerId] = null;
 			this.interrupt();
 		}
