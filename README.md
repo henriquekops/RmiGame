@@ -1,4 +1,4 @@
-# RmiGame ![](https://img.shields.io/badge/status-stable-orange)
+# RmiGame
 
 ### How to run
 
